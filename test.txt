@@ -1,2 +1,3 @@
 All the best for Learning new Devops concept
 Lerning Git concept
+Need to Learn Linux and Shell scripting concept
