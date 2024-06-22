@@ -1,1 +1,3 @@
 Learning Devops concept and Learning the cloud technology
+Learning Devops concept
+Learning Git concept
