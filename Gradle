@@ -1,0 +1,43 @@
+plugins {
+    id 'base'
+}
+
+ext {
+    pluginName = project.hasProperty('pluginName') ? project.pluginName : 'defaultPlugin'
+    profileName = project.hasProperty('profileName') ? project.profileName : 'defaultProfile'
+    templateName = project.hasProperty('templateName') ? project.templateName : 'defaultTemplate'
+}
+
+def baseDir = file("ToolResources")
+
+task prepareStructure {
+    doLast {
+        def folders = [
+            "${baseDir}/data/defaults/diagrams/CustomDiagram",
+            "${baseDir}/resourcemanager",
+            "${baseDir}/plugins/${pluginName}",
+            "${baseDir}/profiles",
+            "${baseDir}/templates/${templateName}"
+        ]
+
+        folders.each { new File(it).mkdirs() }
+
+        // Create example files (you can modify this logic)
+        new File("${baseDir}/resourcemanager/resourceDescriptor.xml").text = "<resource>...</resource>"
+        new File("${baseDir}/plugins/${pluginName}/Plugin.xml").text = "<plugin>...</plugin>"
+        new File("${baseDir}/plugins/${pluginName}/${pluginName}.jar").text = "binary content"
+        new File("${baseDir}/profiles/${profileName}.mdzip").text = "profile content"
+        new File("${baseDir}/templates/${templateName}/description.html").text = "<html>Description</html>"
+        new File("${baseDir}/templates/${templateName}/${templateName}.mdzip").text = "template content"
+        new File("${baseDir}/templates/${templateName}/${templateName}.html").text = "<html>Template</html>"
+
+        println "Folder structure and files prepared for ${pluginName}"
+    }
+}
+
+task zipResources(type: Zip) {
+    dependsOn prepareStructure
+    from baseDir
+    archiveFileName = "${pluginName}_resources.zip"
+    destinationDirectory = file("$buildDir/zips")
+}
