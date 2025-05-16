@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'PLUGIN_NAME', defaultValue: 'MyPlugin', description: 'Plugin name')
+        string(name: 'PROFILE_NAME', defaultValue: 'MyProfile', description: 'Profile name')
+        string(name: 'TEMPLATE_NAME', defaultValue: 'MyTemplate', description: 'Template name')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Generate Structure and Zip') {
+            steps {
+                script {
+                    sh "./gradlew clean zipResources " +
+                        "-PpluginName=${params.PLUGIN_NAME} " +
+                        "-PprofileName=${params.PROFILE_NAME} " +
+                        "-PtemplateName=${params.TEMPLATE_NAME}"
+                }
+            }
+        }
+
+        stage('Archive Zip') {
+            steps {
+                archiveArtifacts artifacts: 'build/zips/*.zip', fingerprint: true
+            }
+        }
+    }
+}
