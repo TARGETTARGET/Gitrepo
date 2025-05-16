@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'PLUGIN_NAME', defaultValue: 'MyPlugin', description: 'Plugin name')
+        string(name: 'PROFILE_NAME', defaultValue: 'MyProfile', description: 'Profile name')
+        string(name: 'TEMPLATE_NAME', defaultValue: 'MyTemplate', description: 'Template name')
+    }
+
+    environment {
+        BASE_DIR = "ToolResources"
+    }
+
+    stages {
+        stage('Create Folder Structure') {
+            steps {
+                script {
+                    def folders = [
+                        "${env.BASE_DIR}/data/defaults/diagrams/CustomDiagram",
+                        "${env.BASE_DIR}/resourcemanager",
+                        "${env.BASE_DIR}/plugins/${params.PLUGIN_NAME}",
+                        "${env.BASE_DIR}/profiles",
+                        "${env.BASE_DIR}/templates/${params.TEMPLATE_NAME}"
+                    ]
+
+                    folders.each { dir ->
+                        sh "mkdir -p ${dir}"
+                    }
+
+                    // Create example files
+                    writeFile file: "${env.BASE_DIR}/resourcemanager/resourceDescriptor.xml", text: "<resource>...</resource>"
+                    writeFile file: "${env.BASE_DIR}/plugins/${params.PLUGIN_NAME}/Plugin.xml", text: "<plugin>...</plugin>"
+                    writeFile file: "${env.BASE_DIR}/plugins/${params.PLUGIN_NAME}/${params.PLUGIN_NAME}.jar", text: "binary content"
+                    writeFile file: "${env.BASE_DIR}/profiles/${params.PROFILE_NAME}.mdzip", text: "profile content"
+                    writeFile file: "${env.BASE_DIR}/templates/${params.TEMPLATE_NAME}/description.html", text: "<html>Description</html>"
+                    writeFile file: "${env.BASE_DIR}/templates/${params.TEMPLATE_NAME}/${params.TEMPLATE_NAME}.mdzip", text: "template content"
+                    writeFile file: "${env.BASE_DIR}/templates/${params.TEMPLATE_NAME}/${params.TEMPLATE_NAME}.html", text: "<html>Template</html>"
+                }
+            }
+        }
+
+        stage('Zip Structure') {
+            steps {
+                sh "zip -r ${params.PLUGIN_NAME}_resources.zip ${env.BASE_DIR}"
+            }
+        }
+
+        stage('Archive ZIP') {
+            steps {
+                archiveArtifacts artifacts: "${params.PLUGIN_NAME}_resources.zip", fingerprint: true
+            }
+        }
+    }
+}
